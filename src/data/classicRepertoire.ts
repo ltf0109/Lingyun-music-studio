@@ -1,0 +1,976 @@
+import { ClassicExcerpt, ProjectState, Track } from '../types/music';
+import {
+  createNoteId,
+  calculateChordsAndBassTracks,
+  calculateRhythmTrack,
+  calculateCounterMelodyTrack,
+  generateNotesForRole,
+  getDefaultAcousticProfile,
+} from '../algorithms/composer';
+
+export const CLASSIC_REPERTOIRE: ClassicExcerpt[] = [
+  {
+    id: 'jasmine_flower',
+    title: '茉莉花 (经典江南民歌主题)',
+    composerOrOrigin: '中国传统民歌 · 五声宫调代表作',
+    tag: '国风民歌 · 清丽婉转',
+    description: '经典的“好一朵美丽的茉莉花”主题乐句（3 3 5 6 1 1 6 | 5 5 6 5），展现五声音阶级进与跳进结合的东方柔美韵律。',
+    bpm: 84,
+    bars: 8,
+    rootNote: 0, // C Major Pentatonic
+    scale: 'pentatonic_major',
+    progressionId: 'guofeng_jade',
+    trackInstruments: {
+      melody: 'dizi',
+      counter: 'pipa',
+      chords: 'guzheng',
+      bass: 'cello_solo',
+      rhythm: 'percussion_kit',
+    },
+    extraTracks: [
+      { name: '空灵吟唱和声', role: 'pad', instrument: 'soft_humming', volume: 0.68, color: '#818CF8' },
+    ],
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I (宫)', functionHint: '清丽开篇 · 茉莉初绽' },
+      { barIndex: 1, degree: 1, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V (徵)', functionHint: '徵音舒展 · 芬芳满园' },
+      { barIndex: 2, degree: 2, rootSemitone: 9, chordType: 'minor', label: 'Am', roman: 'vi (羽)', functionHint: '再度扬起 · 婉转叠句' },
+      { barIndex: 3, degree: 3, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V (徵)', functionHint: '半终止落音 · 意犹未尽' },
+      { barIndex: 4, degree: 0, rootSemitone: 5, chordType: 'major', label: 'F', roman: 'IV', functionHint: 'B段展开 · 芬芳美丽满枝桠' },
+      { barIndex: 5, degree: 1, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I (宫)', functionHint: '清香回旋 · 又香又白人人夸' },
+      { barIndex: 6, degree: 2, rootSemitone: 2, chordType: 'minor', label: 'Dm', roman: 'ii (商)', functionHint: '商音婉转 · 让我来将你摘下' },
+      { barIndex: 7, degree: 3, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I (宫)', functionHint: '圆满归宫 · 送给别人家' },
+    ],
+    melodyNotes: [
+      // Bars 1-4
+      { pitch: 64, startStep: 0, durationSteps: 4, velocity: 0.88 },
+      { pitch: 64, startStep: 4, durationSteps: 2, velocity: 0.78 },
+      { pitch: 67, startStep: 6, durationSteps: 2, velocity: 0.82 },
+      { pitch: 69, startStep: 8, durationSteps: 2, velocity: 0.85 },
+      { pitch: 72, startStep: 10, durationSteps: 2, velocity: 0.9 },
+      { pitch: 72, startStep: 12, durationSteps: 2, velocity: 0.86 },
+      { pitch: 69, startStep: 14, durationSteps: 2, velocity: 0.8 },
+
+      { pitch: 67, startStep: 16, durationSteps: 6, velocity: 0.88 },
+      { pitch: 67, startStep: 22, durationSteps: 2, velocity: 0.78 },
+      { pitch: 69, startStep: 24, durationSteps: 4, velocity: 0.85 },
+      { pitch: 67, startStep: 28, durationSteps: 4, velocity: 0.82 },
+
+      { pitch: 64, startStep: 32, durationSteps: 4, velocity: 0.88 },
+      { pitch: 64, startStep: 36, durationSteps: 2, velocity: 0.78 },
+      { pitch: 67, startStep: 38, durationSteps: 2, velocity: 0.82 },
+      { pitch: 69, startStep: 40, durationSteps: 2, velocity: 0.85 },
+      { pitch: 72, startStep: 42, durationSteps: 2, velocity: 0.92 },
+      { pitch: 72, startStep: 44, durationSteps: 2, velocity: 0.86 },
+      { pitch: 69, startStep: 46, durationSteps: 2, velocity: 0.8 },
+
+      { pitch: 67, startStep: 48, durationSteps: 6, velocity: 0.88 },
+      { pitch: 67, startStep: 54, durationSteps: 2, velocity: 0.78 },
+      { pitch: 64, startStep: 56, durationSteps: 4, velocity: 0.84 },
+      { pitch: 62, startStep: 60, durationSteps: 4, velocity: 0.82 },
+
+      // Bars 5-8: 5 5 5 | 3 5 6 6 5 | 3 2 1 3 2 1 | 1 2 1 -
+      { pitch: 67, startStep: 64, durationSteps: 4, velocity: 0.88 },
+      { pitch: 67, startStep: 68, durationSteps: 4, velocity: 0.84 },
+      { pitch: 67, startStep: 72, durationSteps: 4, velocity: 0.86 },
+      { pitch: 64, startStep: 76, durationSteps: 2, velocity: 0.8 },
+      { pitch: 67, startStep: 78, durationSteps: 2, velocity: 0.84 },
+
+      { pitch: 69, startStep: 80, durationSteps: 4, velocity: 0.9 },
+      { pitch: 69, startStep: 84, durationSteps: 4, velocity: 0.85 },
+      { pitch: 67, startStep: 88, durationSteps: 8, velocity: 0.88 },
+
+      { pitch: 64, startStep: 96, durationSteps: 4, velocity: 0.86 },
+      { pitch: 62, startStep: 100, durationSteps: 2, velocity: 0.8 },
+      { pitch: 60, startStep: 102, durationSteps: 2, velocity: 0.82 },
+      { pitch: 64, startStep: 104, durationSteps: 4, velocity: 0.86 },
+      { pitch: 62, startStep: 108, durationSteps: 2, velocity: 0.8 },
+      { pitch: 60, startStep: 110, durationSteps: 2, velocity: 0.82 },
+
+      { pitch: 60, startStep: 112, durationSteps: 4, velocity: 0.86 },
+      { pitch: 62, startStep: 116, durationSteps: 4, velocity: 0.84 },
+      { pitch: 60, startStep: 120, durationSteps: 8, velocity: 0.92 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.58,
+      pitchSmoothness: 0.85,
+      chordStyle: 'arpeggio',
+      rhythmIntensity: 0.35,
+    },
+  },
+  {
+    id: 'chunjiang_huayueye',
+    title: '春江花月夜 (古曲《夕阳箫鼓》节选)',
+    composerOrOrigin: '中国古典十大名曲 · 鱼咬尾与换头合尾句式',
+    tag: '中国古典 · 钟鼓齐鸣',
+    description: '取自“江楼钟鼓”核心乐句，采用中国传统作曲精髓“鱼咬尾”承接手法，琵琶、古筝与上古钟磬交相辉映。',
+    bpm: 74,
+    bars: 8,
+    rootNote: 0,
+    scale: 'pentatonic_major',
+    progressionId: 'royal_ritual_prog',
+    trackInstruments: {
+      melody: 'pipa',
+      counter: 'dizi',
+      chords: 'guzheng',
+      bass: 'cello_solo',
+      rhythm: 'percussion_kit',
+    },
+    extraTracks: [
+      { name: '上古钟磬金石', role: 'accent', instrument: 'ancient_bianzhong', volume: 0.78, color: '#FBBF24' },
+    ],
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 4, chordType: 'minor', label: 'Em', roman: 'iii (角)', functionHint: '江楼暮色 · 琵琶起音' },
+      { barIndex: 1, degree: 1, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V (徵)', functionHint: '波光潋滟 · 徵音回应' },
+      { barIndex: 2, degree: 2, rootSemitone: 9, chordType: 'minor', label: 'Am', roman: 'vi (羽)', functionHint: '明月升空 · 清越递进' },
+      { barIndex: 3, degree: 3, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I (宫)', functionHint: '鱼咬尾承接 · 初归宫音' },
+      { barIndex: 4, degree: 0, rootSemitone: 2, chordType: 'minor', label: 'Dm', roman: 'ii (商)', functionHint: '水云深处 · 竹笛接引' },
+      { barIndex: 5, degree: 1, rootSemitone: 9, chordType: 'minor', label: 'Am', roman: 'vi (羽)', functionHint: '渔歌晚唱 · 层层涟漪' },
+      { barIndex: 6, degree: 2, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V (徵)', functionHint: '钟鼓回荡 · 江天一色' },
+      { barIndex: 7, degree: 3, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I (宫)', functionHint: '合尾归宫 · 万籁俱寂' },
+    ],
+    melodyNotes: [
+      { pitch: 64, startStep: 0, durationSteps: 4, velocity: 0.9 },
+      { pitch: 67, startStep: 4, durationSteps: 2, velocity: 0.8 },
+      { pitch: 69, startStep: 6, durationSteps: 2, velocity: 0.84 },
+      { pitch: 72, startStep: 8, durationSteps: 4, velocity: 0.92 },
+      { pitch: 69, startStep: 12, durationSteps: 2, velocity: 0.82 },
+      { pitch: 67, startStep: 14, durationSteps: 2, velocity: 0.78 },
+
+      { pitch: 69, startStep: 16, durationSteps: 4, velocity: 0.88 },
+      { pitch: 67, startStep: 20, durationSteps: 2, velocity: 0.78 },
+      { pitch: 64, startStep: 22, durationSteps: 2, velocity: 0.82 },
+      { pitch: 62, startStep: 24, durationSteps: 4, velocity: 0.86 },
+      { pitch: 64, startStep: 28, durationSteps: 2, velocity: 0.78 },
+      { pitch: 67, startStep: 30, durationSteps: 2, velocity: 0.82 },
+
+      { pitch: 64, startStep: 32, durationSteps: 4, velocity: 0.86 },
+      { pitch: 62, startStep: 36, durationSteps: 2, velocity: 0.78 },
+      { pitch: 60, startStep: 38, durationSteps: 2, velocity: 0.8 },
+      { pitch: 62, startStep: 40, durationSteps: 4, velocity: 0.85 },
+      { pitch: 64, startStep: 44, durationSteps: 2, velocity: 0.8 },
+      { pitch: 67, startStep: 46, durationSteps: 2, velocity: 0.84 },
+
+      { pitch: 64, startStep: 48, durationSteps: 2, velocity: 0.85 },
+      { pitch: 67, startStep: 50, durationSteps: 2, velocity: 0.82 },
+      { pitch: 62, startStep: 52, durationSteps: 2, velocity: 0.84 },
+      { pitch: 64, startStep: 54, durationSteps: 2, velocity: 0.78 },
+      { pitch: 60, startStep: 56, durationSteps: 8, velocity: 0.9 },
+
+      // Bars 5-8 expansion
+      { pitch: 62, startStep: 64, durationSteps: 4, velocity: 0.86 },
+      { pitch: 64, startStep: 68, durationSteps: 4, velocity: 0.84 },
+      { pitch: 67, startStep: 72, durationSteps: 4, velocity: 0.88 },
+      { pitch: 69, startStep: 76, durationSteps: 4, velocity: 0.86 },
+
+      { pitch: 72, startStep: 80, durationSteps: 6, velocity: 0.92 },
+      { pitch: 74, startStep: 86, durationSteps: 2, velocity: 0.84 },
+      { pitch: 72, startStep: 88, durationSteps: 4, velocity: 0.88 },
+      { pitch: 69, startStep: 92, durationSteps: 4, velocity: 0.84 },
+
+      { pitch: 67, startStep: 96, durationSteps: 4, velocity: 0.86 },
+      { pitch: 69, startStep: 100, durationSteps: 2, velocity: 0.8 },
+      { pitch: 67, startStep: 102, durationSteps: 2, velocity: 0.82 },
+      { pitch: 64, startStep: 104, durationSteps: 4, velocity: 0.85 },
+      { pitch: 62, startStep: 108, durationSteps: 4, velocity: 0.82 },
+
+      { pitch: 64, startStep: 112, durationSteps: 2, velocity: 0.85 },
+      { pitch: 67, startStep: 114, durationSteps: 2, velocity: 0.82 },
+      { pitch: 62, startStep: 116, durationSteps: 2, velocity: 0.84 },
+      { pitch: 64, startStep: 118, durationSteps: 2, velocity: 0.78 },
+      { pitch: 60, startStep: 120, durationSteps: 8, velocity: 0.94 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.55,
+      pitchSmoothness: 0.84,
+      chordStyle: 'arpeggio',
+      rhythmIntensity: 0.38,
+    },
+  },
+  {
+    id: 'canghai_yishengxiao',
+    title: '沧海一声笑 (五声宫调武侠绝唱)',
+    composerOrOrigin: '黄霑 · 经典五声倒序下行（6 5 3 2 1）典范',
+    tag: '江湖豪情 · 大道至简',
+    description: '仅用宫商角徵羽五声从高到低顺阶而下（6 5 3 2 1 | 3 2 1 6 5），却写出纵横江湖的万丈豪情，是零基础领悟五声音阶力量的最佳范本！',
+    bpm: 88,
+    bars: 8,
+    rootNote: 0, // C Major Pentatonic
+    scale: 'pentatonic_major',
+    progressionId: 'royal_ritual_prog',
+    trackInstruments: {
+      melody: 'dizi',
+      counter: 'guzheng',
+      chords: 'pipa',
+      bass: 'epic_brass',
+      rhythm: 'percussion_kit',
+    },
+    extraTracks: [
+      { name: '男高音豪迈独唱', role: 'pad', instrument: 'male_tenor', volume: 0.78, color: '#818CF8' },
+    ],
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 9, chordType: 'minor', label: 'Am', roman: 'vi (羽)', functionHint: '沧海一声笑 · 羽音高起' },
+      { barIndex: 1, degree: 1, rootSemitone: 4, chordType: 'minor', label: 'Em', roman: 'iii (角)', functionHint: '滔滔两岸潮 · 顺阶下行' },
+      { barIndex: 2, degree: 2, rootSemitone: 5, chordType: 'major', label: 'F', roman: 'IV', functionHint: '浮沉随浪 · 低音蓄势' },
+      { barIndex: 3, degree: 3, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V (徵)', functionHint: '只记今朝 · 扬眉冲霄' },
+      { barIndex: 4, degree: 0, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I (宫)', functionHint: '苍天笑 · 宫音开阔' },
+      { barIndex: 5, degree: 1, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V (徵)', functionHint: '纷纷世上潮 · 豪气干云' },
+      { barIndex: 6, degree: 2, rootSemitone: 9, chordType: 'minor', label: 'Am', roman: 'vi (羽)', functionHint: '谁负谁胜出 · 快意恩仇' },
+      { barIndex: 7, degree: 3, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I (宫)', functionHint: '天知晓 · 稳归主音' },
+    ],
+    melodyNotes: [
+      // Bar 1: A5(6) G5(2) E5(4) D5(2) C5(2)
+      { pitch: 69, startStep: 0, durationSteps: 6, velocity: 0.94 },
+      { pitch: 67, startStep: 6, durationSteps: 2, velocity: 0.86 },
+      { pitch: 64, startStep: 8, durationSteps: 4, velocity: 0.88 },
+      { pitch: 62, startStep: 12, durationSteps: 2, velocity: 0.84 },
+      { pitch: 60, startStep: 14, durationSteps: 2, velocity: 0.86 },
+      // Bar 2: E5(6) D5(2) C5(4) A4(2) G4(2)
+      { pitch: 64, startStep: 16, durationSteps: 6, velocity: 0.9 },
+      { pitch: 62, startStep: 22, durationSteps: 2, velocity: 0.82 },
+      { pitch: 60, startStep: 24, durationSteps: 4, velocity: 0.86 },
+      { pitch: 57, startStep: 28, durationSteps: 2, velocity: 0.82 },
+      { pitch: 55, startStep: 30, durationSteps: 2, velocity: 0.88 },
+      // Bar 3: G4(4) A4(2) G4(2) A4(4) C5(2) D5(2)
+      { pitch: 55, startStep: 32, durationSteps: 4, velocity: 0.86 },
+      { pitch: 57, startStep: 36, durationSteps: 2, velocity: 0.82 },
+      { pitch: 55, startStep: 38, durationSteps: 2, velocity: 0.84 },
+      { pitch: 57, startStep: 40, durationSteps: 4, velocity: 0.88 },
+      { pitch: 60, startStep: 44, durationSteps: 2, velocity: 0.85 },
+      { pitch: 62, startStep: 46, durationSteps: 2, velocity: 0.88 },
+      // Bar 4: E5(2) G5(2) A5(4) G5(8)
+      { pitch: 64, startStep: 48, durationSteps: 2, velocity: 0.88 },
+      { pitch: 67, startStep: 50, durationSteps: 2, velocity: 0.9 },
+      { pitch: 69, startStep: 52, durationSteps: 4, velocity: 0.94 },
+      { pitch: 67, startStep: 56, durationSteps: 8, velocity: 0.92 },
+      // Bar 5: A5(6) G5(2) E5(4) D5(2) C5(2)
+      { pitch: 69, startStep: 64, durationSteps: 6, velocity: 0.94 },
+      { pitch: 67, startStep: 70, durationSteps: 2, velocity: 0.86 },
+      { pitch: 64, startStep: 72, durationSteps: 4, velocity: 0.88 },
+      { pitch: 62, startStep: 76, durationSteps: 2, velocity: 0.84 },
+      { pitch: 60, startStep: 78, durationSteps: 2, velocity: 0.86 },
+      // Bar 6: E5(6) D5(2) C5(4) A4(2) G4(2)
+      { pitch: 64, startStep: 80, durationSteps: 6, velocity: 0.9 },
+      { pitch: 62, startStep: 86, durationSteps: 2, velocity: 0.82 },
+      { pitch: 60, startStep: 88, durationSteps: 4, velocity: 0.86 },
+      { pitch: 57, startStep: 92, durationSteps: 2, velocity: 0.82 },
+      { pitch: 55, startStep: 94, durationSteps: 2, velocity: 0.88 },
+      // Bar 7: G4(4) A4(2) C5(2) D5(4) E5(2) D5(2)
+      { pitch: 55, startStep: 96, durationSteps: 4, velocity: 0.86 },
+      { pitch: 57, startStep: 100, durationSteps: 2, velocity: 0.84 },
+      { pitch: 60, startStep: 102, durationSteps: 2, velocity: 0.86 },
+      { pitch: 62, startStep: 104, durationSteps: 4, velocity: 0.9 },
+      { pitch: 64, startStep: 108, durationSteps: 2, velocity: 0.88 },
+      { pitch: 62, startStep: 110, durationSteps: 2, velocity: 0.86 },
+      // Bar 8: C5(16)
+      { pitch: 60, startStep: 112, durationSteps: 16, velocity: 0.95 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.56,
+      pitchSmoothness: 0.88,
+      chordStyle: 'arpeggio',
+      rhythmIntensity: 0.65,
+    },
+  },
+  {
+    id: 'pachelbel_canon',
+    title: '帕赫贝尔《D大调卡农》 (黄金八和弦经典)',
+    composerOrOrigin: '约翰·帕赫贝尔 · 巴洛克室内乐复调传奇',
+    tag: '卡农鼻祖 · 温暖治愈',
+    description: '影响后世数百年流行与古典音乐的“卡农黄金八和弦”原版进行（I - V - vi - iii - IV - I - IV - V），弦乐协奏与竖琴、羽管键琴层层推进。',
+    bpm: 80,
+    bars: 8,
+    rootNote: 2, // D Major
+    scale: 'major',
+    progressionId: 'canon_warm',
+    trackInstruments: {
+      melody: 'string_concerto',
+      counter: 'violin_section',
+      chords: 'orchestral_harp',
+      bass: 'cello_solo',
+      rhythm: 'percussion_kit',
+    },
+    extraTracks: [
+      { name: '巴洛克羽管键琴', role: 'arpeggio', instrument: 'harpsichord', volume: 0.72, color: '#2DD4BF' },
+    ],
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'major', label: 'D', roman: 'I', functionHint: '主和弦 · 温暖神圣的开端' },
+      { barIndex: 1, degree: 1, rootSemitone: 7, chordType: 'major', label: 'A', roman: 'V', functionHint: '五级属和弦 · 柔和下行衔接' },
+      { barIndex: 2, degree: 2, rootSemitone: 9, chordType: 'minor', label: 'Bm', roman: 'vi', functionHint: '六级小和弦 · 深情叙事感涌现' },
+      { barIndex: 3, degree: 3, rootSemitone: 4, chordType: 'minor', label: 'F#m', roman: 'iii', functionHint: '三级小和弦 · 细腻内省过渡' },
+      { barIndex: 4, degree: 0, rootSemitone: 5, chordType: 'major', label: 'G', roman: 'IV', functionHint: '四级下属 · 敞开怀抱般温暖' },
+      { barIndex: 5, degree: 1, rootSemitone: 0, chordType: 'major', label: 'D', roman: 'I', functionHint: '一级回归 · 安宁托举' },
+      { barIndex: 6, degree: 2, rootSemitone: 5, chordType: 'major', label: 'G', roman: 'IV', functionHint: '再度铺垫 · 情绪推向顶点' },
+      { barIndex: 7, degree: 3, rootSemitone: 7, chordType: 'major', label: 'A', roman: 'V', functionHint: '属音期待 · 完美循环轮回' },
+    ],
+    melodyNotes: [
+      // Bars 1-4: Iconic descending triad top line F#5 - E5 - D5 - C#5 - B4 - A4 - B4 - C#5
+      { pitch: 78, startStep: 0, durationSteps: 8, velocity: 0.88 },
+      { pitch: 74, startStep: 8, durationSteps: 8, velocity: 0.82 },
+      { pitch: 76, startStep: 16, durationSteps: 8, velocity: 0.86 },
+      { pitch: 73, startStep: 24, durationSteps: 8, velocity: 0.82 },
+      { pitch: 74, startStep: 32, durationSteps: 8, velocity: 0.86 },
+      { pitch: 71, startStep: 40, durationSteps: 8, velocity: 0.82 },
+      { pitch: 73, startStep: 48, durationSteps: 8, velocity: 0.84 },
+      { pitch: 69, startStep: 56, durationSteps: 8, velocity: 0.8 },
+      // Bars 5-8: Flowing baroque 8th-note variation
+      { pitch: 71, startStep: 64, durationSteps: 4, velocity: 0.86 },
+      { pitch: 69, startStep: 68, durationSteps: 4, velocity: 0.82 },
+      { pitch: 71, startStep: 72, durationSteps: 4, velocity: 0.85 },
+      { pitch: 74, startStep: 76, durationSteps: 4, velocity: 0.88 },
+
+      { pitch: 78, startStep: 80, durationSteps: 4, velocity: 0.9 },
+      { pitch: 76, startStep: 84, durationSteps: 4, velocity: 0.85 },
+      { pitch: 74, startStep: 88, durationSteps: 4, velocity: 0.86 },
+      { pitch: 73, startStep: 92, durationSteps: 4, velocity: 0.82 },
+
+      { pitch: 71, startStep: 96, durationSteps: 4, velocity: 0.88 },
+      { pitch: 74, startStep: 100, durationSteps: 4, velocity: 0.86 },
+      { pitch: 79, startStep: 104, durationSteps: 4, velocity: 0.92 },
+      { pitch: 78, startStep: 108, durationSteps: 4, velocity: 0.88 },
+
+      { pitch: 76, startStep: 112, durationSteps: 6, velocity: 0.9 },
+      { pitch: 74, startStep: 118, durationSteps: 2, velocity: 0.82 },
+      { pitch: 73, startStep: 120, durationSteps: 8, velocity: 0.88 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.6,
+      pitchSmoothness: 0.88,
+      chordStyle: 'arpeggio',
+      rhythmIntensity: 0.3,
+    },
+  },
+  {
+    id: 'ode_to_joy',
+    title: '欢乐颂 (贝多芬《第九交响曲》8小节全主题)',
+    composerOrOrigin: '路德维希·凡·贝多芬 · 欧洲古典交响巅峰',
+    tag: '恢弘圣咏 · 级进典范',
+    description: '完整的8小节《欢乐颂》A+A’上下句结构（前4小节落在2音半终止，后4小节落在1音完全终止），直观展示西方经典乐段对称美学。',
+    bpm: 108,
+    bars: 8,
+    rootNote: 0, // C Major
+    scale: 'major',
+    progressionId: 'canon_warm',
+    trackInstruments: {
+      melody: 'epic_brass',
+      counter: 'grand_choir',
+      chords: 'epic_strings',
+      bass: 'pipe_organ',
+      rhythm: 'percussion_kit',
+    },
+    extraTracks: [
+      { name: '圣殿教堂钟声', role: 'accent', instrument: 'church_bells', volume: 0.75, color: '#FBBF24' },
+    ],
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I', functionHint: '庄严主调 · 圣歌起航' },
+      { barIndex: 1, degree: 1, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V', functionHint: '属调辉煌 · 光芒延展' },
+      { barIndex: 2, degree: 2, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I', functionHint: '重返主音 · 信念凝聚' },
+      { barIndex: 3, degree: 3, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V', functionHint: '上句半终止 · 悬念铺垫' },
+      { barIndex: 4, degree: 0, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I', functionHint: '下句再现 · 万众齐唱' },
+      { barIndex: 5, degree: 1, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V', functionHint: '铜管齐鸣 · 气吞山河' },
+      { barIndex: 6, degree: 2, rootSemitone: 5, chordType: 'major', label: 'F', roman: 'IV', functionHint: '下属托举 · 迈向终曲' },
+      { barIndex: 7, degree: 3, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I', functionHint: '完全终止 · 凯旋归主' },
+    ],
+    melodyNotes: [
+      // Bars 1-4 (Antecedent phrase ending on D5)
+      { pitch: 64, startStep: 0, durationSteps: 4, velocity: 0.9 },
+      { pitch: 64, startStep: 4, durationSteps: 4, velocity: 0.86 },
+      { pitch: 65, startStep: 8, durationSteps: 4, velocity: 0.88 },
+      { pitch: 67, startStep: 12, durationSteps: 4, velocity: 0.92 },
+
+      { pitch: 67, startStep: 16, durationSteps: 4, velocity: 0.92 },
+      { pitch: 65, startStep: 20, durationSteps: 4, velocity: 0.86 },
+      { pitch: 64, startStep: 24, durationSteps: 4, velocity: 0.85 },
+      { pitch: 62, startStep: 28, durationSteps: 4, velocity: 0.84 },
+
+      { pitch: 60, startStep: 32, durationSteps: 4, velocity: 0.88 },
+      { pitch: 60, startStep: 36, durationSteps: 4, velocity: 0.84 },
+      { pitch: 62, startStep: 40, durationSteps: 4, velocity: 0.86 },
+      { pitch: 64, startStep: 44, durationSteps: 4, velocity: 0.9 },
+
+      { pitch: 64, startStep: 48, durationSteps: 6, velocity: 0.92 },
+      { pitch: 62, startStep: 54, durationSteps: 2, velocity: 0.8 },
+      { pitch: 62, startStep: 56, durationSteps: 8, velocity: 0.88 },
+
+      // Bars 5-8 (Consequent phrase ending on C5)
+      { pitch: 64, startStep: 64, durationSteps: 4, velocity: 0.92 },
+      { pitch: 64, startStep: 68, durationSteps: 4, velocity: 0.88 },
+      { pitch: 65, startStep: 72, durationSteps: 4, velocity: 0.9 },
+      { pitch: 67, startStep: 76, durationSteps: 4, velocity: 0.94 },
+
+      { pitch: 67, startStep: 80, durationSteps: 4, velocity: 0.94 },
+      { pitch: 65, startStep: 84, durationSteps: 4, velocity: 0.88 },
+      { pitch: 64, startStep: 88, durationSteps: 4, velocity: 0.86 },
+      { pitch: 62, startStep: 92, durationSteps: 4, velocity: 0.85 },
+
+      { pitch: 60, startStep: 96, durationSteps: 4, velocity: 0.9 },
+      { pitch: 60, startStep: 100, durationSteps: 4, velocity: 0.86 },
+      { pitch: 62, startStep: 104, durationSteps: 4, velocity: 0.88 },
+      { pitch: 64, startStep: 108, durationSteps: 4, velocity: 0.92 },
+
+      { pitch: 62, startStep: 112, durationSteps: 6, velocity: 0.92 },
+      { pitch: 60, startStep: 118, durationSteps: 2, velocity: 0.84 },
+      { pitch: 60, startStep: 120, durationSteps: 8, velocity: 0.96 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.55,
+      pitchSmoothness: 0.9,
+      chordStyle: 'sustained',
+      rhythmIntensity: 0.65,
+    },
+  },
+  {
+    id: 'vivaldi_spring',
+    title: '维瓦尔第《四季 · 春》 (第一乐章快板)',
+    composerOrOrigin: '安东尼奥·维瓦尔第 · 巴洛克小提琴协奏曲经典',
+    tag: '弦乐协奏 · 生机盎然',
+    description: '巴洛克协奏曲最具代表性的明朗动机，采用「弦乐协奏」主音搭配「巴洛克羽管键琴」分解和弦，重现春回大地的欢快跳跃感。',
+    bpm: 106,
+    bars: 4,
+    rootNote: 0,
+    scale: 'major',
+    progressionId: 'canon_warm',
+    trackInstruments: {
+      melody: 'string_concerto',
+      counter: 'violin_section',
+      chords: 'harpsichord',
+      bass: 'cello_solo',
+      rhythm: 'percussion_kit',
+    },
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I', functionHint: '春风拂面 · 欢快起奏' },
+      { barIndex: 1, degree: 1, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V', functionHint: '百鸟争鸣 · 高音辉映' },
+      { barIndex: 2, degree: 2, rootSemitone: 0, chordType: 'major', label: 'C', roman: 'I', functionHint: '溪流欢歌 · 级进回旋' },
+      { barIndex: 3, degree: 3, rootSemitone: 7, chordType: 'major', label: 'G', roman: 'V', functionHint: '华丽顿弓 · 协奏收束' },
+    ],
+    melodyNotes: [
+      { pitch: 60, startStep: 0, durationSteps: 2, velocity: 0.84 },
+      { pitch: 64, startStep: 2, durationSteps: 4, velocity: 0.9 },
+      { pitch: 64, startStep: 6, durationSteps: 4, velocity: 0.88 },
+      { pitch: 64, startStep: 10, durationSteps: 4, velocity: 0.88 },
+      { pitch: 62, startStep: 14, durationSteps: 1, velocity: 0.8 },
+      { pitch: 60, startStep: 15, durationSteps: 1, velocity: 0.82 },
+
+      { pitch: 67, startStep: 16, durationSteps: 6, velocity: 0.94 },
+      { pitch: 65, startStep: 22, durationSteps: 1, velocity: 0.82 },
+      { pitch: 64, startStep: 23, durationSteps: 1, velocity: 0.84 },
+      { pitch: 64, startStep: 24, durationSteps: 4, velocity: 0.88 },
+      { pitch: 62, startStep: 28, durationSteps: 2, velocity: 0.8 },
+      { pitch: 60, startStep: 30, durationSteps: 2, velocity: 0.82 },
+
+      { pitch: 67, startStep: 32, durationSteps: 6, velocity: 0.94 },
+      { pitch: 65, startStep: 38, durationSteps: 1, velocity: 0.82 },
+      { pitch: 64, startStep: 39, durationSteps: 1, velocity: 0.84 },
+      { pitch: 65, startStep: 40, durationSteps: 2, velocity: 0.86 },
+      { pitch: 67, startStep: 42, durationSteps: 2, velocity: 0.9 },
+      { pitch: 65, startStep: 44, durationSteps: 2, velocity: 0.85 },
+      { pitch: 64, startStep: 46, durationSteps: 2, velocity: 0.82 },
+
+      { pitch: 62, startStep: 48, durationSteps: 4, velocity: 0.88 },
+      { pitch: 59, startStep: 52, durationSteps: 4, velocity: 0.84 },
+      { pitch: 55, startStep: 56, durationSteps: 8, velocity: 0.9 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.68,
+      pitchSmoothness: 0.76,
+      chordStyle: 'arpeggio',
+      rhythmIntensity: 0.42,
+    },
+  },
+  {
+    id: 'mountain_king',
+    title: '在山魔王的宫殿里 (格里格《培尔·金特》)',
+    composerOrOrigin: '爱德华·格里格 · 奇幻戏剧交响名篇',
+    tag: '奇幻史诗 · 悬疑递进',
+    description: '世界音乐史上最著名的悬疑递进动机（6 7 1 2 3 1 3 | #2 7 #2 | 2 b7 2），结合史诗弦乐、史诗管乐与教堂钟声，张力拉满。',
+    bpm: 118,
+    bars: 4,
+    rootNote: 9, // A Minor
+    scale: 'harmonic_minor',
+    progressionId: 'baroque_court',
+    trackInstruments: {
+      melody: 'epic_strings',
+      counter: 'church_bells',
+      chords: 'epic_brass',
+      bass: 'cello_solo',
+      rhythm: 'percussion_kit',
+    },
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'minor', label: 'Am', roman: 'i', functionHint: '潜入地宫 · 神秘跳音' },
+      { barIndex: 1, degree: 1, rootSemitone: 7, chordType: 'major', label: 'E', roman: 'V', functionHint: '半音逼近 · 魔王苏醒' },
+      { barIndex: 2, degree: 2, rootSemitone: 0, chordType: 'minor', label: 'Am', roman: 'i', functionHint: '再度攀升 · 步伐加紧' },
+      { barIndex: 3, degree: 3, rootSemitone: 7, chordType: 'major', label: 'E', roman: 'V', functionHint: '铜管钟声 · 震撼对峙' },
+    ],
+    melodyNotes: [
+      { pitch: 57, startStep: 0, durationSteps: 2, velocity: 0.8 },
+      { pitch: 59, startStep: 2, durationSteps: 2, velocity: 0.82 },
+      { pitch: 60, startStep: 4, durationSteps: 2, velocity: 0.84 },
+      { pitch: 62, startStep: 6, durationSteps: 2, velocity: 0.86 },
+      { pitch: 64, startStep: 8, durationSteps: 2, velocity: 0.9 },
+      { pitch: 60, startStep: 10, durationSteps: 2, velocity: 0.84 },
+      { pitch: 64, startStep: 12, durationSteps: 4, velocity: 0.92 },
+
+      { pitch: 63, startStep: 16, durationSteps: 2, velocity: 0.88 },
+      { pitch: 59, startStep: 18, durationSteps: 2, velocity: 0.8 },
+      { pitch: 63, startStep: 20, durationSteps: 4, velocity: 0.9 },
+      { pitch: 62, startStep: 24, durationSteps: 2, velocity: 0.88 },
+      { pitch: 58, startStep: 26, durationSteps: 2, velocity: 0.8 },
+      { pitch: 62, startStep: 28, durationSteps: 4, velocity: 0.9 },
+
+      { pitch: 57, startStep: 32, durationSteps: 2, velocity: 0.84 },
+      { pitch: 59, startStep: 34, durationSteps: 2, velocity: 0.86 },
+      { pitch: 60, startStep: 36, durationSteps: 2, velocity: 0.88 },
+      { pitch: 62, startStep: 38, durationSteps: 2, velocity: 0.9 },
+      { pitch: 64, startStep: 40, durationSteps: 2, velocity: 0.92 },
+      { pitch: 60, startStep: 42, durationSteps: 2, velocity: 0.86 },
+      { pitch: 64, startStep: 44, durationSteps: 2, velocity: 0.92 },
+      { pitch: 69, startStep: 46, durationSteps: 2, velocity: 0.96 },
+
+      { pitch: 68, startStep: 48, durationSteps: 2, velocity: 0.92 },
+      { pitch: 64, startStep: 50, durationSteps: 2, velocity: 0.86 },
+      { pitch: 60, startStep: 52, durationSteps: 2, velocity: 0.88 },
+      { pitch: 64, startStep: 54, durationSteps: 2, velocity: 0.9 },
+      { pitch: 68, startStep: 56, durationSteps: 8, velocity: 0.96 },
+    ],
+    counterNotes: [
+      { pitch: 69, startStep: 0, durationSteps: 8, velocity: 0.72 },
+      { pitch: 71, startStep: 16, durationSteps: 8, velocity: 0.75 },
+      { pitch: 72, startStep: 32, durationSteps: 8, velocity: 0.78 },
+      { pitch: 76, startStep: 48, durationSteps: 8, velocity: 0.84 },
+      { pitch: 68, startStep: 56, durationSteps: 8, velocity: 0.88 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.75,
+      pitchSmoothness: 0.72,
+      chordStyle: 'rhythmic',
+      rhythmIntensity: 0.8,
+    },
+  },
+  {
+    id: 'tchaikovsky_swan_lake',
+    title: '天鹅湖主题 (柴可夫斯基芭蕾交响名篇)',
+    composerOrOrigin: '彼得·伊里奇·柴可夫斯基 · 浪漫主义交响传奇',
+    tag: '凄美芭蕾 · 竖琴长笛',
+    description: '经典的“长音主音 + 级进上行至五级音”旋律模型（6 - 3 4 5 6 7 | 1 6 1 6 1 3 6），配合踏板竖琴流水琶音与西洋长笛、小提琴群，高贵凄美。',
+    bpm: 82,
+    bars: 4,
+    rootNote: 9, // A Minor
+    scale: 'minor',
+    progressionId: 'epic_heroic',
+    trackInstruments: {
+      melody: 'flute_orchestral',
+      counter: 'violin_section',
+      chords: 'orchestral_harp',
+      bass: 'cello_solo',
+      rhythm: 'percussion_kit',
+    },
+    extraTracks: [
+      { name: '史诗弦乐铺底', role: 'pad', instrument: 'epic_strings', volume: 0.72, color: '#818CF8' },
+    ],
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'minor', label: 'Am', roman: 'i', functionHint: '湖面月影 · 天鹅独舞' },
+      { barIndex: 1, degree: 1, rootSemitone: 5, chordType: 'minor', label: 'Dm', roman: 'iv', functionHint: '羽翼舒展 · 凄美倾诉' },
+      { barIndex: 2, degree: 2, rootSemitone: 0, chordType: 'minor', label: 'Am', roman: 'i', functionHint: '涟漪回荡 · 宿命呼应' },
+      { barIndex: 3, degree: 3, rootSemitone: 7, chordType: 'major', label: 'E', roman: 'V', functionHint: '戏剧高潮 · 属音张力' },
+    ],
+    melodyNotes: [
+      // Bar 1: E5(8) A4(2) B4(2) C5(2) D5(2)
+      { pitch: 64, startStep: 0, durationSteps: 8, velocity: 0.9 },
+      { pitch: 57, startStep: 8, durationSteps: 2, velocity: 0.8 },
+      { pitch: 59, startStep: 10, durationSteps: 2, velocity: 0.82 },
+      { pitch: 60, startStep: 12, durationSteps: 2, velocity: 0.84 },
+      { pitch: 62, startStep: 14, durationSteps: 2, velocity: 0.86 },
+      // Bar 2: E5(6) C5(2) E5(6) C5(2)
+      { pitch: 64, startStep: 16, durationSteps: 6, velocity: 0.92 },
+      { pitch: 60, startStep: 22, durationSteps: 2, velocity: 0.82 },
+      { pitch: 64, startStep: 24, durationSteps: 6, velocity: 0.9 },
+      { pitch: 60, startStep: 30, durationSteps: 2, velocity: 0.82 },
+      // Bar 3: E5(6) A4(2) C5(2) A4(2) F4(2) C5(2)
+      { pitch: 64, startStep: 32, durationSteps: 6, velocity: 0.92 },
+      { pitch: 57, startStep: 38, durationSteps: 2, velocity: 0.8 },
+      { pitch: 60, startStep: 40, durationSteps: 2, velocity: 0.84 },
+      { pitch: 57, startStep: 42, durationSteps: 2, velocity: 0.8 },
+      { pitch: 53, startStep: 44, durationSteps: 2, velocity: 0.82 },
+      { pitch: 60, startStep: 46, durationSteps: 2, velocity: 0.86 },
+      // Bar 4: A4(8) G#4(4) B4(4)
+      { pitch: 57, startStep: 48, durationSteps: 8, velocity: 0.9 },
+      { pitch: 56, startStep: 56, durationSteps: 4, velocity: 0.84 },
+      { pitch: 59, startStep: 60, durationSteps: 4, velocity: 0.88 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.54,
+      pitchSmoothness: 0.84,
+      chordStyle: 'arpeggio',
+      rhythmIntensity: 0.4,
+    },
+  },
+  {
+    id: 'bach_toccata',
+    title: '巴赫《d小调托卡塔与赋格》 (管风琴哥特经典)',
+    composerOrOrigin: '约翰·塞巴斯蒂安·巴赫 · 巴洛克管风琴之王',
+    tag: '大教堂管风琴 · 震撼戏剧',
+    description: '音乐史上最具辨识度的管风琴开篇动机（高音颤音装饰下行 + 减七和弦戏剧性轰鸣），展现大教堂管风琴与羽管键琴、钟声的宗教庄严感。',
+    bpm: 88,
+    bars: 4,
+    rootNote: 2, // D Harmonic Minor
+    scale: 'harmonic_minor',
+    progressionId: 'baroque_court',
+    trackInstruments: {
+      melody: 'pipe_organ',
+      counter: 'harpsichord',
+      chords: 'epic_strings',
+      bass: 'pipe_organ',
+      rhythm: 'percussion_kit',
+    },
+    extraTracks: [
+      { name: '哥特教堂钟声', role: 'accent', instrument: 'church_bells', volume: 0.8, color: '#FBBF24' },
+    ],
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'minor', label: 'Dm', roman: 'i', functionHint: '管风琴号角 · 雷霆起音' },
+      { barIndex: 1, degree: 1, rootSemitone: 7, chordType: 'major', label: 'A', roman: 'V', functionHint: '导音张力 · 深渊回响' },
+      { barIndex: 2, degree: 2, rootSemitone: 5, chordType: 'minor', label: 'Gm', roman: 'iv', functionHint: '复调琶音 · 飞速流转' },
+      { barIndex: 3, degree: 3, rootSemitone: 0, chordType: 'minor', label: 'Dm', roman: 'i', functionHint: '主调轰鸣 · 庄严落定' },
+    ],
+    melodyNotes: [
+      // Bar 1: Iconic Mordent A5 - G5 - A5 (hold) -> G5 F5 E5 D5 C#5 D5
+      { pitch: 69, startStep: 0, durationSteps: 1, velocity: 0.96 },
+      { pitch: 67, startStep: 1, durationSteps: 1, velocity: 0.9 },
+      { pitch: 69, startStep: 2, durationSteps: 6, velocity: 0.96 },
+      { pitch: 67, startStep: 8, durationSteps: 1, velocity: 0.88 },
+      { pitch: 65, startStep: 9, durationSteps: 1, velocity: 0.88 },
+      { pitch: 64, startStep: 10, durationSteps: 1, velocity: 0.88 },
+      { pitch: 62, startStep: 11, durationSteps: 1, velocity: 0.88 },
+      { pitch: 61, startStep: 12, durationSteps: 2, velocity: 0.92 },
+      { pitch: 62, startStep: 14, durationSteps: 2, velocity: 0.95 },
+
+      // Bar 2: Octave lower echo A4 - G4 - A4 -> E4 F4 C#4 D4
+      { pitch: 57, startStep: 16, durationSteps: 1, velocity: 0.94 },
+      { pitch: 55, startStep: 17, durationSteps: 1, velocity: 0.88 },
+      { pitch: 57, startStep: 18, durationSteps: 6, velocity: 0.94 },
+      { pitch: 52, startStep: 24, durationSteps: 2, velocity: 0.88 },
+      { pitch: 53, startStep: 26, durationSteps: 2, velocity: 0.9 },
+      { pitch: 49, startStep: 28, durationSteps: 2, velocity: 0.92 },
+      { pitch: 50, startStep: 30, durationSteps: 2, velocity: 0.95 },
+
+      // Bar 3: Rising diminished arpeggio C#5 - E5 - G5 - Bb5 - A5 - G5 - F5 - E5
+      { pitch: 61, startStep: 32, durationSteps: 2, velocity: 0.86 },
+      { pitch: 64, startStep: 34, durationSteps: 2, velocity: 0.88 },
+      { pitch: 67, startStep: 36, durationSteps: 2, velocity: 0.9 },
+      { pitch: 70, startStep: 38, durationSteps: 2, velocity: 0.94 },
+      { pitch: 69, startStep: 40, durationSteps: 2, velocity: 0.92 },
+      { pitch: 67, startStep: 42, durationSteps: 2, velocity: 0.88 },
+      { pitch: 65, startStep: 44, durationSteps: 2, velocity: 0.86 },
+      { pitch: 64, startStep: 46, durationSteps: 2, velocity: 0.88 },
+
+      // Bar 4: Grand D minor cadence F5 - E5 - D5
+      { pitch: 65, startStep: 48, durationSteps: 4, velocity: 0.92 },
+      { pitch: 64, startStep: 52, durationSteps: 4, velocity: 0.9 },
+      { pitch: 62, startStep: 56, durationSteps: 8, velocity: 0.96 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.68,
+      pitchSmoothness: 0.75,
+      chordStyle: 'sustained',
+      rhythmIntensity: 0.55,
+    },
+  },
+  {
+    id: 'greensleeves_dorian',
+    title: '绿袖子 / 迷雾多利亚 (欧洲古典民谣经典)',
+    composerOrOrigin: '16世纪文艺复兴名曲 · 多利亚调式代表作',
+    tag: '空灵多利亚 · 古典吉他',
+    description: '完美诠释多利亚调式（小调色彩融入明亮四级大三和弦）与古典吉他、银质长笛、空灵吟唱的唯美交融。',
+    bpm: 82,
+    bars: 4,
+    rootNote: 2, // D Dorian
+    scale: 'dorian',
+    progressionId: 'ethereal_dream',
+    trackInstruments: {
+      melody: 'flute_orchestral',
+      counter: 'soft_humming',
+      chords: 'classical_guitar',
+      bass: 'orchestral_harp',
+      rhythm: 'percussion_kit',
+    },
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'minor', label: 'Dm', roman: 'i', functionHint: '静谧小调 · 绿袖轻拂' },
+      { barIndex: 1, degree: 1, rootSemitone: 10, chordType: 'major', label: 'C', roman: 'bVII', functionHint: '开阔大三 · 光影流转' },
+      { barIndex: 2, degree: 2, rootSemitone: 5, chordType: 'major', label: 'G', roman: 'IV (多利亚)', functionHint: '多利亚亮色 · 晨曦微露' },
+      { barIndex: 3, degree: 3, rootSemitone: 7, chordType: 'major', label: 'A', roman: 'V', functionHint: '古典半终止 · 余韵悠长' },
+    ],
+    melodyNotes: [
+      { pitch: 62, startStep: 0, durationSteps: 2, velocity: 0.82 },
+      { pitch: 65, startStep: 2, durationSteps: 4, velocity: 0.88 },
+      { pitch: 67, startStep: 6, durationSteps: 2, velocity: 0.85 },
+      { pitch: 69, startStep: 8, durationSteps: 4, velocity: 0.92 },
+      { pitch: 71, startStep: 12, durationSteps: 2, velocity: 0.86 },
+      { pitch: 69, startStep: 14, durationSteps: 2, velocity: 0.84 },
+
+      { pitch: 67, startStep: 16, durationSteps: 4, velocity: 0.88 },
+      { pitch: 64, startStep: 20, durationSteps: 4, velocity: 0.82 },
+      { pitch: 60, startStep: 24, durationSteps: 4, velocity: 0.85 },
+      { pitch: 62, startStep: 28, durationSteps: 2, velocity: 0.8 },
+      { pitch: 64, startStep: 30, durationSteps: 2, velocity: 0.84 },
+
+      { pitch: 65, startStep: 32, durationSteps: 4, velocity: 0.88 },
+      { pitch: 62, startStep: 36, durationSteps: 4, velocity: 0.82 },
+      { pitch: 62, startStep: 40, durationSteps: 4, velocity: 0.84 },
+      { pitch: 64, startStep: 44, durationSteps: 2, velocity: 0.8 },
+      { pitch: 65, startStep: 46, durationSteps: 2, velocity: 0.84 },
+
+      { pitch: 64, startStep: 48, durationSteps: 6, velocity: 0.9 },
+      { pitch: 61, startStep: 54, durationSteps: 2, velocity: 0.78 },
+      { pitch: 57, startStep: 56, durationSteps: 8, velocity: 0.88 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.52,
+      pitchSmoothness: 0.86,
+      chordStyle: 'arpeggio',
+      rhythmIntensity: 0.3,
+    },
+  },
+  {
+    id: 'yuzhou_changwan',
+    title: '渔舟唱晚 / 高山流水 (古筝五声名曲)',
+    composerOrOrigin: '中国古筝传统名曲 · 宫调花指与流水琶音',
+    tag: '古筝典范 · 山水意境',
+    description: '展现敦煌古筝按滑吟揉与五声级进跳进之美，搭配中国传统竹笛、上古钟磬与独奏大提琴，如夕阳映照万顷碧波。',
+    bpm: 76,
+    bars: 4,
+    rootNote: 7, // G Pentatonic
+    scale: 'pentatonic_major',
+    progressionId: 'guofeng_jade',
+    trackInstruments: {
+      melody: 'guzheng',
+      counter: 'dizi',
+      chords: 'orchestral_harp',
+      bass: 'cello_solo',
+      rhythm: 'percussion_kit',
+    },
+    extraTracks: [
+      { name: '上古钟磬余韵', role: 'accent', instrument: 'ancient_bianzhong', volume: 0.74, color: '#FBBF24' },
+    ],
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'major', label: 'G', roman: 'I (宫)', functionHint: '落霞孤鹜 · 古筝起吟' },
+      { barIndex: 1, degree: 1, rootSemitone: 9, chordType: 'minor', label: 'Em', roman: 'vi (羽)', functionHint: '秋水长天 · 竹笛相和' },
+      { barIndex: 2, degree: 2, rootSemitone: 5, chordType: 'major', label: 'C', roman: 'IV', functionHint: '渔歌互答 · 碧波荡漾' },
+      { barIndex: 3, degree: 3, rootSemitone: 0, chordType: 'major', label: 'G', roman: 'I (宫)', functionHint: '扁舟归岸 · 悠然收束' },
+    ],
+    melodyNotes: [
+      { pitch: 71, startStep: 0, durationSteps: 6, velocity: 0.9 },
+      { pitch: 74, startStep: 6, durationSteps: 2, velocity: 0.82 },
+      { pitch: 69, startStep: 8, durationSteps: 4, velocity: 0.86 },
+      { pitch: 67, startStep: 12, durationSteps: 4, velocity: 0.84 },
+
+      { pitch: 64, startStep: 16, durationSteps: 6, velocity: 0.88 },
+      { pitch: 67, startStep: 22, durationSteps: 2, velocity: 0.8 },
+      { pitch: 69, startStep: 24, durationSteps: 4, velocity: 0.86 },
+      { pitch: 71, startStep: 28, durationSteps: 4, velocity: 0.84 },
+
+      { pitch: 74, startStep: 32, durationSteps: 4, velocity: 0.92 },
+      { pitch: 76, startStep: 36, durationSteps: 2, velocity: 0.86 },
+      { pitch: 74, startStep: 38, durationSteps: 2, velocity: 0.84 },
+      { pitch: 71, startStep: 40, durationSteps: 4, velocity: 0.88 },
+      { pitch: 69, startStep: 44, durationSteps: 4, velocity: 0.82 },
+
+      { pitch: 67, startStep: 48, durationSteps: 4, velocity: 0.86 },
+      { pitch: 69, startStep: 52, durationSteps: 2, velocity: 0.8 },
+      { pitch: 64, startStep: 54, durationSteps: 2, velocity: 0.82 },
+      { pitch: 67, startStep: 56, durationSteps: 8, velocity: 0.92 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.56,
+      pitchSmoothness: 0.84,
+      chordStyle: 'arpeggio',
+      rhythmIntensity: 0.3,
+    },
+  },
+  {
+    id: 'castle_sky_theme',
+    title: '云端浮岛幻想 (经典动漫小调叙事曲风)',
+    composerOrOrigin: '经典6-7-1小调起音模型 · 钢琴与弦乐协奏',
+    tag: '治愈动漫 · 怀旧感动',
+    description: '经典的“6 7 | 1. 7 1 3 | 7 -”小调弱起叙事模型，结合弦乐协奏、音乐会三角钢琴、空灵轻声吟唱与教堂钟声，温暖而令人动容。',
+    bpm: 86,
+    bars: 4,
+    rootNote: 9, // A Minor
+    scale: 'minor',
+    progressionId: 'energetic_rock',
+    trackInstruments: {
+      melody: 'string_concerto',
+      counter: 'flute_orchestral',
+      chords: 'grand_piano',
+      bass: 'cello_solo',
+      rhythm: 'percussion_kit',
+    },
+    extraTracks: [
+      { name: '空灵轻声吟唱', role: 'pad', instrument: 'soft_humming', volume: 0.72, color: '#818CF8' },
+    ],
+    chordTimeline: [
+      { barIndex: 0, degree: 0, rootSemitone: 0, chordType: 'minor', label: 'Am', roman: 'vi', functionHint: '小调起音 · 云端初见' },
+      { barIndex: 1, degree: 1, rootSemitone: 7, chordType: 'minor', label: 'Em', roman: 'iii', functionHint: '温柔跌宕 · 记忆回响' },
+      { barIndex: 2, degree: 2, rootSemitone: 8, chordType: 'major', label: 'F', roman: 'IV', functionHint: '温暖下属 · 梦想升空' },
+      { barIndex: 3, degree: 3, rootSemitone: 3, chordType: 'major', label: 'C', roman: 'I', functionHint: '关系大调 · 豁然开朗' },
+    ],
+    melodyNotes: [
+      // Bar 1: A4(2) B4(2) C5(6) B4(2) C5(2) E5(2)
+      { pitch: 69, startStep: 0, durationSteps: 2, velocity: 0.82 },
+      { pitch: 71, startStep: 2, durationSteps: 2, velocity: 0.84 },
+      { pitch: 72, startStep: 4, durationSteps: 6, velocity: 0.9 },
+      { pitch: 71, startStep: 10, durationSteps: 2, velocity: 0.84 },
+      { pitch: 72, startStep: 12, durationSteps: 2, velocity: 0.88 },
+      { pitch: 76, startStep: 14, durationSteps: 2, velocity: 0.92 },
+      // Bar 2: B4(12) E4(2) E4(2)
+      { pitch: 71, startStep: 16, durationSteps: 12, velocity: 0.88 },
+      { pitch: 64, startStep: 28, durationSteps: 4, velocity: 0.8 },
+      // Bar 3: A4(6) G4(2) A4(4) C5(4)
+      { pitch: 69, startStep: 32, durationSteps: 6, velocity: 0.88 },
+      { pitch: 67, startStep: 38, durationSteps: 2, velocity: 0.82 },
+      { pitch: 69, startStep: 40, durationSteps: 4, velocity: 0.86 },
+      { pitch: 72, startStep: 44, durationSteps: 4, velocity: 0.9 },
+      // Bar 4: G4(16)
+      { pitch: 67, startStep: 48, durationSteps: 16, velocity: 0.9 },
+    ],
+    algorithmParams: {
+      melodyDensity: 0.52,
+      pitchSmoothness: 0.86,
+      chordStyle: 'arpeggio',
+      rhythmIntensity: 0.35,
+    },
+  },
+];
+
+/**
+ * Builds a complete multi-track ProjectState from a ClassicExcerpt (6+ tracks).
+ */
+export function createProjectFromClassicExcerpt(excerpt: ClassicExcerpt): ProjectState {
+  const melodyEvents = excerpt.melodyNotes.map((n) => ({
+    id: createNoteId('cls_mel'),
+    pitch: n.pitch,
+    startStep: n.startStep,
+    durationSteps: n.durationSteps,
+    velocity: n.velocity ?? 0.86,
+  }));
+
+  const baseProject: ProjectState = {
+    title: excerpt.title.split(' ')[0],
+    bpm: excerpt.bpm,
+    bars: excerpt.bars,
+    rootNote: excerpt.rootNote,
+    scale: excerpt.scale,
+    progressionId: excerpt.progressionId,
+    styleId: excerpt.id,
+    algorithmParams: { ...excerpt.algorithmParams },
+    chordTimeline: excerpt.chordTimeline.map((c) => ({ ...c })),
+    tracks: [],
+  };
+
+  const counterEvents = excerpt.counterNotes
+    ? excerpt.counterNotes.map((n) => ({
+        id: createNoteId('cls_cnt'),
+        pitch: n.pitch,
+        startStep: n.startStep,
+        durationSteps: n.durationSteps,
+        velocity: n.velocity ?? 0.72,
+      }))
+    : calculateCounterMelodyTrack(baseProject, melodyEvents);
+
+  const { chordNotes, bassNotes } = calculateChordsAndBassTracks(baseProject);
+  const rhythmNotes = calculateRhythmTrack(baseProject);
+
+  const tracks: Track[] = [
+    {
+      id: 'track_melody',
+      name: '主旋律轨道 (Melody)',
+      role: 'melody',
+      instrument: excerpt.trackInstruments.melody,
+      volume: 0.92,
+      ...getDefaultAcousticProfile(excerpt.trackInstruments.melody),
+      muted: false,
+      solo: false,
+      color: '#F59E0B',
+      notes: melodyEvents,
+    },
+    {
+      id: 'track_counter',
+      name: '副歌/呼应轨道 (Counter)',
+      role: 'counter',
+      instrument: excerpt.trackInstruments.counter,
+      volume: 0.74,
+      ...getDefaultAcousticProfile(excerpt.trackInstruments.counter),
+      muted: false,
+      solo: false,
+      color: '#38BDF8',
+      notes: counterEvents,
+    },
+    {
+      id: 'track_chords',
+      name: '和弦织体轨道 (Chords)',
+      role: 'chords',
+      instrument: excerpt.trackInstruments.chords,
+      volume: 0.78,
+      ...getDefaultAcousticProfile(excerpt.trackInstruments.chords),
+      muted: false,
+      solo: false,
+      color: '#10B981',
+      notes: chordNotes,
+    },
+    {
+      id: 'track_bass',
+      name: '低音根音轨道 (Bass)',
+      role: 'bass',
+      instrument: excerpt.trackInstruments.bass,
+      volume: 0.82,
+      ...getDefaultAcousticProfile(excerpt.trackInstruments.bass),
+      muted: false,
+      solo: false,
+      color: '#A78BFA',
+      notes: bassNotes,
+    },
+    {
+      id: 'track_rhythm',
+      name: '打击乐节奏轨道 (Rhythm)',
+      role: 'rhythm',
+      instrument: excerpt.trackInstruments.rhythm,
+      volume: 0.76,
+      ...getDefaultAcousticProfile(excerpt.trackInstruments.rhythm),
+      muted: false,
+      solo: false,
+      color: '#F43F5E',
+      notes: rhythmNotes,
+    },
+  ];
+
+  // Add any extra tracks configured on the excerpt
+  if (excerpt.extraTracks && excerpt.extraTracks.length > 0) {
+    excerpt.extraTracks.forEach((ext, i) => {
+      const extNotes = generateNotesForRole(
+        baseProject,
+        ext.role,
+        melodyEvents,
+        tracks.length + i
+      );
+      const prof = getDefaultAcousticProfile(ext.instrument);
+      tracks.push({
+        id: `track_extra_${i + 1}`,
+        name: ext.name,
+        role: ext.role,
+        instrument: ext.instrument,
+        volume: ext.volume,
+        fidelity: ext.fidelity ?? prof.fidelity,
+        reverbSend: ext.reverbSend ?? prof.reverbSend,
+        muted: false,
+        solo: false,
+        color: ext.color,
+        notes: extNotes,
+      });
+    });
+  }
+
+  return {
+    ...baseProject,
+    masterFidelity: 0.96,
+    masterReverb: 0.54,
+    hallType: 'golden_hall',
+    tracks,
+  };
+}

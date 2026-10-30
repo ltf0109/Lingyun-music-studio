@@ -1,0 +1,6 @@
+{
+  "name": "灵韵工坊 · 零基础智能计算编曲工作台",
+  "description": "专为零音乐基础设计的智能计算编曲工作台。支持自动生成与补齐旋律、和弦、伴奏及节奏轨道，内置管弦乐、钢琴、古筝、琵琶、竹笛、男女声独唱/合唱/吟唱、管风琴、羽管键琴、电吉他、合成器及打击乐采样，支持一键导出H5源码与标准MIDI文件。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
